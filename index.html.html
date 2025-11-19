@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HPH CP17 - Saisie Production</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 10px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .date-info {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        
+        .form-section {
+            padding: 20px;
+        }
+        
+        .equipe-selector {
+            margin-bottom: 20px;
+        }
+        
+        .equipe-selector label {
+            display: block;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 16px;
+        }
+        
+        .equipe-selector select {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 18px;
+            background: white;
+        }
+        
+        .line-card {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 12px;
+            border-left: 5px solid #667eea;
+            margin-bottom: 20px;
+        }
+        
+        .line-header {
+            font-size: 22px;
+            font-weight: bold;
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+        
+        .production-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .form-group label {
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 8px;
+            font-size: 14px;
+        }
+        
+        .form-group input,
+        .form-group select {
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 16px;
+        }
+        
+        .causes-section {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 15px;
+        }
+        
+        .causes-section h3 {
+            color: #374151;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        
+        .causes-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        
+        .cause-column {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+        
+        .cause-column.equipment { border-color: #f59e0b; }
+        .cause-column.quality { border-color: #ef4444; }
+        .cause-column.organisation { border-color: #3b82f6; }
+        .cause-column.other { border-color: #6b7280; }
+        
+        .cause-column h4 {
+            margin-bottom: 10px;
+            font-size: 13px;
+            font-weight: 600;
+        }
+        
+        .cause-column.equipment h4 { color: #f59e0b; }
+        .cause-column.quality h4 { color: #ef4444; }
+        .cause-column.organisation h4 { color: #3b82f6; }
+        .cause-column.other h4 { color: #6b7280; }
+        
+        .cause-column select,
+        .cause-column input {
+            width: 100%;
+            margin-bottom: 8px;
+        }
+        
+        .save-btn {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            border: none;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            border-radius: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.3);
+        }
+        
+        .save-btn:active {
+            transform: scale(0.98);
+        }
+        
+        .success-message {
+            background: #d1fae5;
+            color: #065f46;
+            padding: 15px;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: none;
+            font-weight: 600;
+            text-align: center;
+        }
+        
+        .debug-info {
+            background: #fef3c7;
+            padding: 10px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-size: 12px;
+            color: #92400e;
+            display: none;
+        }
+        
+        @media (max-width: 768px) {
+            .production-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .causes-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏭 HPH CP17 - Saisie Production</h1>
+            <div class="date-info" id="currentDate">Chargement...</div>
+        </div>
+        
+        <div class="form-section">
+            <div class="debug-info" id="debugInfo">Debug: Chargement...</div>
+            
+            <div class="equipe-selector">
+                <label>👥 Équipe</label>
+                <select id="equipe">
+                    <option value="">Sélectionner...</option>
+                    <option value="Matin">Matin</option>
+                    <option value="Après-midi">Après-midi</option>
+                    <option value="Nuit">Nuit</option>
+                </select>
+            </div>
+            
+            <div class="success-message" id="successMessage">
+                ✅ Données enregistrées avec succès !
+            </div>
+            
+            <div id="linesContainer">
+                <!-- Les lignes seront générées ici -->
+            </div>
+            
+            <button class="save-btn" onclick="saveData()">
+                💾 ENREGISTRER ET VALIDER
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Debug
+        function debug(msg) {
+            console.log(msg);
+            var debugEl = document.getElementById('debugInfo');
+            if (debugEl) {
+                debugEl.style.display = 'block';
+                debugEl.textContent = 'Debug: ' + msg;
+            }
+        }
+        
+        debug('Script démarré');
+        
+        // Données
+        var causesEquipement = ['-', 'Poste robot', 'Poste brosse', 'Poste trémie intérieur', 'Poste trame', 'Poste moule', 'Poste pince', 'Poste tapis de déchargement', 'Plateau tournant', 'Réceptacle', 'Attente maintenance'];
+        var causesQualite = ['-', 'Qualité'];
+        var causesOrganisation = ['-', 'Pause', 'Changement de trame', 'Changement de teinte', 'Changement de format', 'Changement de teinte + format', 'Changement d\'OF', 'Changement de lot', 'Nettoyage/Désinfection', 'Prise de poste', 'Attente approvisionnement'];
+        var causesAutres = ['-', 'Autres'];
+        
+        function createOptions(causes) {
+            var html = '';
+            for (var i = 0; i < causes.length; i++) {
+                html += '<option value="' + causes[i] + '">' + causes[i] + '</option>';
+            }
+            return html;
+        }
+        
+        function updateDate() {
+            try {
+                var now = new Date();
+                var options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+                var dateStr = now.toLocaleDateString('fr-FR', options);
+                document.getElementById('currentDate').textContent = dateStr;
+                debug('Date mise à jour: ' + dateStr);
+            } catch (e) {
+                debug('Erreur updateDate: ' + e.message);
+            }
+        }
+        
+        function generateLines() {
+            try {
+                debug('Génération des lignes...');
+                var container = document.getElementById('linesContainer');
+                
+                if (!container) {
+                    debug('ERREUR: Container non trouvé');
+                    return;
+                }
+                
+                var html = '';
+                
+                for (var i = 1; i <= 8; i++) {
+                    html += '<div class="line-card">';
+                    html += '<div class="line-header">Heure ' + i + 'h</div>';
+                    
+                    html += '<div class="production-grid">';
+                    html += '<div class="form-group">';
+                    html += '<label>✅ Production Bonne</label>';
+                    html += '<input type="number" id="prod_' + i + '" min="0" placeholder="840">';
+                    html += '</div>';
+                    html += '<div class="form-group">';
+                    html += '<label>❌ Rebuts</label>';
+                    html += '<input type="number" id="rebuts_' + i + '" min="0" placeholder="0">';
+                    html += '</div>';
+                    html += '</div>';
+                    
+                    html += '<div class="form-group">';
+                    html += '<label>💬 Commentaire</label>';
+                    html += '<input type="text" id="comment_' + i + '" placeholder="Optionnel">';
+                    html += '</div>';
+                    
+                    html += '<div class="causes-section">';
+                    html += '<h3>⚠️ Arrêts (si applicable)</h3>';
+                    html += '<div class="causes-grid">';
+                    
+                    html += '<div class="cause-column equipment">';
+                    html += '<h4>🔧 ÉQUIPEMENT</h4>';
+                    html += '<select id="equip_' + i + '">' + createOptions(causesEquipement) + '</select>';
+                    html += '<input type="number" id="equip_duree_' + i + '" min="0" placeholder="Durée (min)">';
+                    html += '</div>';
+                    
+                    html += '<div class="cause-column quality">';
+                    html += '<h4>❌ QUALITÉ</h4>';
+                    html += '<select id="qual_' + i + '">' + createOptions(causesQualite) + '</select>';
+                    html += '<input type="number" id="qual_duree_' + i + '" min="0" placeholder="Durée (min)">';
+                    html += '</div>';
+                    
+                    html += '<div class="cause-column organisation">';
+                    html += '<h4>📋 ORGANISATION</h4>';
+                    html += '<select id="org_' + i + '">' + createOptions(causesOrganisation) + '</select>';
+                    html += '<input type="number" id="org_duree_' + i + '" min="0" placeholder="Durée (min)">';
+                    html += '</div>';
+                    
+                    html += '<div class="cause-column other">';
+                    html += '<h4>🔀 AUTRES</h4>';
+                    html += '<select id="autres_' + i + '">' + createOptions(causesAutres) + '</select>';
+                    html += '<input type="number" id="autres_duree_' + i + '" min="0" placeholder="Durée (min)">';
+                    html += '</div>';
+                    
+                    html += '</div>';
+                    html += '</div>';
+                    html += '</div>';
+                }
+                
+                container.innerHTML = html;
+                debug('8 lignes générées OK');
+            } catch (e) {
+                debug('ERREUR generateLines: ' + e.message);
+            }
+        }
+        
+        function saveData() {
+            try {
+                var equipe = document.getElementById('equipe').value;
+                
+                if (!equipe) {
+                    alert('⚠️ Veuillez sélectionner une équipe');
+                    return;
+                }
+                
+                var data = {
+                    date: new Date().toLocaleDateString('fr-FR'),
+                    jour: new Date().toLocaleDateString('fr-FR', { weekday: 'long' }),
+                    equipe: equipe,
+                    lignes: []
+                };
+                
+                for (var i = 1; i <= 8; i++) {
+                    data.lignes.push({
+                        heure: i + 'h',
+                        prod: document.getElementById('prod_' + i).value || '',
+                        rebuts: document.getElementById('rebuts_' + i).value || '',
+                        equipement: document.getElementById('equip_' + i).value,
+                        equipement_duree: document.getElementById('equip_duree_' + i).value || '',
+                        qualite: document.getElementById('qual_' + i).value,
+                        qualite_duree: document.getElementById('qual_duree_' + i).value || '',
+                        organisation: document.getElementById('org_' + i).value,
+                        organisation_duree: document.getElementById('org_duree_' + i).value || '',
+                        autres: document.getElementById('autres_' + i).value,
+                        autres_duree: document.getElementById('autres_duree_' + i).value || '',
+                        commentaire: document.getElementById('comment_' + i).value || ''
+                    });
+                }
+                
+                localStorage.setItem('hph_cp17_data', JSON.stringify(data));
+                localStorage.setItem('hph_cp17_last_save', new Date().toISOString());
+                
+                var successMsg = document.getElementById('successMessage');
+                successMsg.style.display = 'block';
+                setTimeout(function() {
+                    successMsg.style.display = 'none';
+                }, 3000);
+                
+                debug('Données sauvegardées: ' + data.lignes.length + ' lignes');
+            } catch (e) {
+                alert('Erreur sauvegarde: ' + e.message);
+                debug('ERREUR saveData: ' + e.message);
+            }
+        }
+        
+        function loadSavedData() {
+            try {
+                var saved = localStorage.getItem('hph_cp17_data');
+                if (!saved) {
+                    debug('Pas de données sauvegardées');
+                    return;
+                }
+                
+                var data = JSON.parse(saved);
+                
+                if (data.date !== new Date().toLocaleDateString('fr-FR')) {
+                    debug('Données d\'un autre jour');
+                    return;
+                }
+                
+                document.getElementById('equipe').value = data.equipe || '';
+                
+                for (var idx = 0; idx < data.lignes.length; idx++) {
+                    var ligne = data.lignes[idx];
+                    var i = idx + 1;
+                    document.getElementById('prod_' + i).value = ligne.prod || '';
+                    document.getElementById('rebuts_' + i).value = ligne.rebuts || '';
+                    document.getElementById('equip_' + i).value = ligne.equipement || '-';
+                    document.getElementById('equip_duree_' + i).value = ligne.equipement_duree || '';
+                    document.getElementById('qual_' + i).value = ligne.qualite || '-';
+                    document.getElementById('qual_duree_' + i).value = ligne.qualite_duree || '';
+                    document.getElementById('org_' + i).value = ligne.organisation || '-';
+                    document.getElementById('org_duree_' + i).value = ligne.organisation_duree || '';
+                    document.getElementById('autres_' + i).value = ligne.autres || '-';
+                    document.getElementById('autres_duree_' + i).value = ligne.autres_duree || '';
+                    document.getElementById('comment_' + i).value = ligne.commentaire || '';
+                }
+                
+                debug('Données chargées OK');
+            } catch (e) {
+                debug('ERREUR loadSavedData: ' + e.message);
+            }
+        }
+        
+        function init() {
+            try {
+                debug('Initialisation...');
+                updateDate();
+                generateLines();
+                loadSavedData();
+                debug('Init terminée OK');
+                
+                // Cacher le debug après 3 secondes
+                setTimeout(function() {
+                    document.getElementById('debugInfo').style.display = 'none';
+                }, 3000);
+            } catch (e) {
+                debug('ERREUR init: ' + e.message);
+            }
+        }
+        
+        // Sauvegarde auto toutes les 30 secondes
+        setInterval(function() {
+            var equipe = document.getElementById('equipe').value;
+            if (equipe) {
+                saveData();
+            }
+        }, 30000);
+        
+        // Démarrage au chargement de la page
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', init);
+        } else {
+            init();
+        }
+    </script>
+</body>
+</html>
